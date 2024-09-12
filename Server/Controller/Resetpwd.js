@@ -1,0 +1,2 @@
+//resetpasstoken
+//resetpassword
