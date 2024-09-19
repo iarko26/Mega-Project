@@ -22,6 +22,7 @@ const UserSchema=new mongoose.Schema({
         
 
     },
+
     accountType:{
         type:String,
         enum:["Admin","Student","Instructor"],
@@ -29,7 +30,7 @@ const UserSchema=new mongoose.Schema({
 
 
     },
-    addditionalInfo:{
+    additionalInfo:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Profile',
         required:true
