@@ -1,5 +1,5 @@
 const mongoose=require('mongoose');
-const User = require('./User');
+
 const courseSchema=new mongoose.Schema({
     courseName:{
         type:String,
@@ -13,7 +13,7 @@ const courseSchema=new mongoose.Schema({
     },
     instructor:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:User,
+        ref:"User",
         required:true
     },
     whatwillyoulearn:{
@@ -21,7 +21,7 @@ const courseSchema=new mongoose.Schema({
         required:true,
         trim:true
     },
-    courseContenet:[{
+    courseContent:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Section",
         required:true
@@ -39,26 +39,27 @@ const courseSchema=new mongoose.Schema({
         required:true
     },
     tags:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Tag",
+        type:[String],
         required:true
+        
+    },
+    category:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Category"
     },
     studentEnrolled:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:User,
+        ref:"User",
         required:true
 
-    }]
-
-
-
-
-
-
-
-
-
-    
-
+    }],
+    instructions:{
+        type:[String],
+        required:true
+    },
+    status:{
+        type:String,
+        enum:["Draft","Published"]
+    }
 })
 module.exports=mongoose.model('Course',courseSchema);

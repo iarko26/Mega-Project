@@ -2,50 +2,17 @@
 //login
 //send otp
 //change password
-const express = require('express');
-const mongoose = require('mongoose');
+
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const User=require('../Model/User');
 const OTP=require('../Model/OTP');
 const otpGenerator=require('otp-generation');
 const crypto=require('crypto');
+const {passwordUpdate}=require('../mail/template/passwordUpdate');
 const Profile = require('../Model/Profile');
+const mailSender = require('../Utils/Mailsender');
 require('dotenv').config();
-exports.sendOTP=async(req,res)=>{
-   try{
-    const{email}=req.body;
-    const checkUser=await User.findOne({email:email});
-    if(checkUser){
-        return res.status(401).json({
-            success:false,
-            message:"User already exists",
-
-        })
-    }
-     const otp=crypto.randomInt(1000,9999).toString();
-     const newOTP=new OTP({
-        email:email,
-        otp:otp
-     })
-     
-     await newOTP.save();
-     
-     res.status(200).json({
-        success:true,
-        message:"OTP sent successfully"
-     })
-}catch(error){
-    console.error(error);
-    return res.status(500).json({
-        success:false,
-        message:"OTP cannot be sent"
-    })
-
-
-   }
-}
-
 exports.signUp=async(req,res)=>{
     try{
         //data fetch
@@ -85,15 +52,17 @@ exports.signUp=async(req,res)=>{
                 message:"OTP not found"
             })
          }
-         else if(recentOTP.otp!==otp){
+         else if(otp!==recentOTP[0].otp){
             return res.status(400).json({
                 success:false,
                 message:"Invalid OTP"
             })
          }
-
 //hash password
 const hashedpassword=await bcrypt.hash(password,10);
+//create the user 
+let approved='';
+approved==="Instructor" ? (approved=false) : (approved=true);
 //create a profile
 const ProfileDetails=await Profile.create({
     gender:null,
@@ -110,7 +79,7 @@ const newUser=await User.create({
     accountType:accountType,
     contactNumber:contactNumber,
     additionalInfo:ProfileDetails._id,
-    image:`https://api.dicebear.com/5.x/initials/svg?seed=${firstname} ${lastname}`
+    image:`https://api.dicebear.com/5.x/initials/svg?seed=${firstname}+${lastname}`
 
 
 
@@ -145,7 +114,7 @@ exports.login=async(req,res)=>{
             })
         }
         //check user registered
-        const existingUser=await User.findOne({email:email}).populate('additionalInfo');
+        const existingUser=await User.findOne({email:email}).populate('additionalInfo').exec();
         if(!existingUser){
             return res.status(401).json({
                 success:false,
@@ -161,13 +130,13 @@ exports.login=async(req,res)=>{
         }
         if(await bcrypt.compare(password,existingUser.password)){
             const token=jwt.sign(payload,process.env.JWT_SECRET,{
-                expiresIn:'2h'
+                expiresIn:'24h'
             })
             const user=existingUser.toObject();
             user.token=token;
             user.password=undefined;
             const options={
-                expires:new Date(Date.now()+3*24*60*60*1000);
+                expires:new Date(Date.now()+3*24*60*60*1000),
                 httpOnly:true
             }
 
@@ -199,62 +168,121 @@ exports.login=async(req,res)=>{
         })
     }
 }
+exports.sendOTP=async(req,res)=>{
+   try{
+    const{email}=req.body;
+    const checkUser=await User.findOne({email:email});
+    if(checkUser){
+        return res.status(401).json({
+            success:false,
+            message:"User already exists",
+
+        })
+    }
+    //  const otp=crypto.randomInt(1000,9999).toString();
+    
+    //  const newOTP=new OTP({
+    //     email:email,
+    //     otp:otp
+    //  })
+     
+    //  await newOTP.save();
+    var otp=otpGenerator.generate(6,{upperCaseAlphabets: false,
+			lowerCaseAlphabets: false,
+			specialChars: false,});
+    const result=await OTP.findOne({otp:otp});
+    console.log(result);
+    console.log("OTP",otp);
+    while(result){
+        otp=otpGenerator.generate(6,{upperCaseAlphabets: false
+    });
+    }
+    const otppayload={email:email,otp:otp};
+    const otpbody=await OTP.create(otppayload);
+    console.log(otpbody);
+     res.status(200).json({
+        success:true,
+        message:"OTP sent successfully"
+     })
+
+
+}
+catch(error){
+    console.error(error);
+    return res.status(500).json({
+        success:false,
+        message:"OTP cannot be sent"
+    })
+
+
+   }
+}
+
+
+
+
 exports.changePassword=async(req,res)=>{
     try{
-        //get data
-        const{email,oldpassword,newpassword,confirmpassword}=req.body;
-        //old password,new password,confirm password
-        //validate data
-        if(!email || !oldpassword || !newpassword || !confirmpassword){
-            return res.status(400).json({
-                success:false,
-                message:"All fields are required"
-            })
-        }
-        const existingUser=await User.findOne({email:email});
-        if(!existingUser){
-            return res.status(401).json({
-                success:false,
-                message:"User is not registered"
-            })
-        }
-        //check old password
-        const isMatch=await bcrypt.compare(oldpassword,existingUser.password);
-        if(!isMatch){
-            return res.status(401).json({
-                success:false,
-                message:"Invalid password"
-            })
-        }
-        //check new password
-        if(newpassword!==confirmpassword){
-            return res.status(400).json({
-                success:false,
-                message:"Password do not match"
-            })
-        }
-
-        //password update in db
-        const hashednewpassword=await bcrypt.hash(newpassword,10);
-        existingUser.password=hashednewpassword;
-        await existingUser.save();
-      //send mail- password changed
-
-       
-
-        //return response
-        return res.status(200).json({
-            success: true,
-            message: "Password changed successfully",
-          });
-
+//get user data
+const userdetails=await User.findById(req.existingUser.id);
+//get old and new password and confirm password from req body
+const {oldPassword,newPassword,confirmPassword}=req.body;
+//validate old password
+const isPasswordValid=await bcrypt.compare(
+    oldPassword,
+    userdetails.password
+)
+if(!isPasswordValid){
+    return res.status(400).json({
+        success:false,
+        message:"Invalid old password"
+    })
+}
+if(newPassword!==confirmPassword){
+    return res.status(400).json({
+        success:false,
+        message:"Password do not match"
+    })
+}
+//update password
+const encryptedPassword=await bcrypt.hash(newPassword,10);
+const updatedUSerdetails=await User.findByIdAndUpdate(
+    req.existingUser.id,
+    {
+        password:encryptedPassword
+    },
+    {new:true})
+//send notification mail
+try{
+    const emailresponse=await mailSender(
+        updatedUSerdetails.email,
+        passwordUpdate(
+            updatedUSerdetails.email,
+            `Password updated successfully for ${updatedUSerdetails.firstname} ${updatedUSerdetails.lastname}`
+        )
         
-       
+        
+    );
+    console.log("Email sent successfully:",emailresponse.response)
+
+}
+catch(error){
+    console.error("Error occured while sending mail",error);
+    return res.status(500).json({
+        success:false,
+        message:"Error occured while sending mail"
+    })
+}
+return res.status(200).json({
+    success:true,
+    message:"Password updated successfully"
+})
 
     }catch(error){
-        console.error(error);
+        console.error("Error occured while updating password",error);
         return res.status(500).json({
-
+            success:false,
+            message:"Error occured while updating password"
         })
     }
 }

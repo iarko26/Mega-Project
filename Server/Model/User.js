@@ -30,9 +30,17 @@ const UserSchema=new mongoose.Schema({
 
 
     },
+    active:{
+           type: Boolean,
+			default: true,
+    },
+    approved:{
+        type:Boolean,
+        default:false
+    },
     additionalInfo:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'Profile',
+        ref:"Profile",
         required:true
         
     },
@@ -57,5 +65,7 @@ const UserSchema=new mongoose.Schema({
 
 
 
-})
+},
+{ timestamps: true }
+)
 module.exports=mongoose.model('User',UserSchema);
