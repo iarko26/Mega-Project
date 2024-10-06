@@ -124,3 +124,74 @@ exports.getalldetails=async(req,res)=>{
 }
 
 //updateprofileimage
+exports.updateDisplyaPicture=async(req,res)=>{
+    try{
+        //get image
+        const displayPicture=req.files.displayPicture;
+        //get user id
+        const UserId=req.existingUser.id;
+        //upload 
+        const image=await uploadimg(
+            displayPicture,
+            process.env.FOLDER_NAME,
+            1000,
+            1000
+        )
+        console.log(image);
+        //update profile
+        const updatedProfile=await User.findByIdAndUpdate({
+            _id:UserId
+        },
+    {
+        image:image.secure_url
+    },{
+        new:true
+    })
+    //return response
+    res.status(200).json({
+        success:true,
+        message:"Image updated successfully",
+        data:updatedProfile
+    })
+
+    }
+    catch(error){
+        console.error(error);
+        return res.status(500).json({
+            success:false,
+            message:"Image cannot be updated"
+        })
+    }
+}
+//get enrolled courses
+exports.getEnrolledCourses=async(req,res)=>{
+    try{
+        //get user id
+        const UserId=req.existingUser.id;
+        //get user details
+        const userDetails=await User.findOne({
+            _id:UserId
+        }).populate("courses").exec();
+        //validate
+        if(!userDetails){
+            return res.status(404).json({
+                success:false,
+                message:"Courses not found"
+            })
+        }
+        //return response
+        res.status(200).json({
+            success:true,
+            message:"Courses fetched successfully",
+            data:userDetails.courses
+        })
+
+    }
+    catch(error){
+        console.error(error);
+        return res.status(500).json({
+            success:false,
+            message:"Courses cannot be fetched"
+        })
+    }
+}

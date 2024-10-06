@@ -17,8 +17,8 @@ exports.createCourse=async(req,res)=>{
                 message:"All fields are required"
             })
         }
-        if(!status || status===undefined){
-            status="Draft";
+        if(!Status || Status===undefined){
+            Status="Draft";
         }
         //check instructor
         const instructordetails=await User.findById(userid,{
@@ -122,7 +122,40 @@ exports.getAllCourses=async(req,res)=>{
 //getCourseDetails
 exports.getcourseDetails=async(req,res)=>{
     try{
-        
+        //get course id
+        const {courseId}=req.body
+        //get course details
+        const courseDetails=await Course.find(
+            {_id:courseId}
+        ).populate({
+            path:"instructor",
+            populate:{
+                path:"additionalInfo",
+            }
+        })
+        .populate('category')
+        .populate({
+            path:'courseContent',
+            populate:{
+                path:'Subsection',
+            }
+        })
+        .populate('ratingandreviews')
+        .exec();
+
+        //validation
+        if(!courseDetails){
+            return res.status(404).json({
+                success:false,
+                message:"Course details not found"
+            })
+        }
+        //return response
+        return res.status(200).json({
+            success:true,
+            message:"Course details fetched successfully",
+            data:courseDetails
+        })
 
     }
     catch(error){
