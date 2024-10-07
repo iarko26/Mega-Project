@@ -7,7 +7,7 @@ const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const User=require('../Model/User');
 const OTP=require('../Model/OTP');
-const otpGenerator=require('otp-generation');
+
 const crypto=require('crypto');
 const {passwordUpdate}=require('../mail/template/passwordUpdate');
 const Profile = require('../Model/Profile');
@@ -43,16 +43,16 @@ exports.signUp=async(req,res)=>{
 
         //find most recent otp stored in db
 
-        const recentOTP=await OTP.findOne({email:email}).sort({createdAt:-1}).limit(1);
+const recentOTP=await OTP.findOne({email:email}).sort({createdAt:-1}).limit(1);
         console.log(recentOTP);
          //validate otp
-         if(recentOTP.length===0){
+         if(!recentOTP){
             return res.status(400).json({
                 success:false,
                 message:"OTP not found"
             })
          }
-         else if(otp!==recentOTP[0].otp){
+         else if(otp!==recentOTP.otp){
             return res.status(400).json({
                 success:false,
                 message:"Invalid OTP"
@@ -67,8 +67,8 @@ approved==="Instructor" ? (approved=false) : (approved=true);
 const ProfileDetails=await Profile.create({
     gender:null,
     dob:null,
-    about:null,
-    ContactNo:null
+    about:"",
+    contactNumber:contactNumber
 })
 //create a user for the db
 const newUser=await User.create({
@@ -179,30 +179,28 @@ exports.sendOTP=async(req,res)=>{
 
         })
     }
-    //  const otp=crypto.randomInt(1000,9999).toString();
+     const otp=crypto.randomInt(1000,9999).toString();
     
-    //  const newOTP=new OTP({
-    //     email:email,
-    //     otp:otp
-    //  })
-     
-    //  await newOTP.save();
-    var otp=otpGenerator.generate(6,{upperCaseAlphabets: false,
-			lowerCaseAlphabets: false,
-			specialChars: false,});
+    
     const result=await OTP.findOne({otp:otp});
+    while(result){
+        otp=crypto.randomInt(1000,9999).toString();
+        result=await OTP.findOne({otp:otp});
+    }
+
     console.log(result);
     console.log("OTP",otp);
-    while(result){
-        otp=otpGenerator.generate(6,{upperCaseAlphabets: false
-    });
-    }
+    // while(result){
+    //     otp=otpGenerator.generate(6,{upperCaseAlphabets: false
+    // });
+    // }
     const otppayload={email:email,otp:otp};
     const otpbody=await OTP.create(otppayload);
     console.log(otpbody);
      res.status(200).json({
         success:true,
-        message:"OTP sent successfully"
+        message:"OTP sent successfully",
+        otp:otp
      })
 
 

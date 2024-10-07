@@ -4,7 +4,7 @@ const Course=require('../Model/Course');
 exports.createSection=async(req,res)=>{
     try{
         //data fetch
-        const {sectionName,courseId}=req.body;
+        let {sectionName,courseId}=req.body;
         //data validation
         if(!sectionName || !courseId){
             return res.status(400).json({
@@ -13,11 +13,11 @@ exports.createSection=async(req,res)=>{
             })
         }
         //create Section
-        const newSection=await Section.create({
+        let newSection=await Section.create({
             sectionName:sectionName
         })
         //update course with section id and use populate to replace section and subsection both in updatedCourseDetails
-       const updatedCourseDetails= await Course.findByIdAndUpdate({_id:courseId},
+       let updatedCourseDetails= await Course.findByIdAndUpdate({_id:courseId},
             {$push:{
                 courseContent:newSection._id
             }},
@@ -48,7 +48,7 @@ exports.createSection=async(req,res)=>{
 exports.updateSection=async(req,res)=>{
     try{
         //data fetch
-        const {sectionName,sectionId}=req.body;
+        let {sectionName,sectionId}=req.body;
         //validation
         if(!sectionName || !sectionId){
             return res.status(400).json({
@@ -57,7 +57,7 @@ exports.updateSection=async(req,res)=>{
             })
         }
         //update
-        const updatedsection=await Section.findByIdAndUpdate({
+        let updatedsection=await Section.findByIdAndUpdate({
             _id:sectionId
         },{
             sectionName:sectionName
@@ -83,13 +83,27 @@ exports.updateSection=async(req,res)=>{
 exports.deleteSection=async(req,res)=>{
      try{
         //data fetch
-        const {sectionId}=req.params;
+        let {sectionId}=req.body;
         //delete
-        const deletedSection=await Section.findByIdAndDelete(
-            {
-                _id:sectionId
+        let deletedSection=await Section.findByIdAndDelete(sectionId);
+        //validation
+        if(!deletedSection){
+            return res.status(404).json({
+                success:false,
+                message:"Section not found"
             })
-        //tesing:do we need to delete section from courseContent array of course
+        }
+           
+        //after delete section remove section from course
+        await Course.findByIdAndUpdate(deletedSection.courseId,{
+            $pull:{
+                courseContent:sectionId
+            }
+        },{new:true})
+        
+
+
+
 
         //return response
         return res.status(200).json({

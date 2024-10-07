@@ -15,3 +15,4 @@ const cloudinaryConnect=()=>{
     }
 
 }
+module.exports={cloudinaryConnect}

@@ -7,12 +7,12 @@ const RatingandReviewSchema=new mongoose.Schema({
     },
     rating:{
         type:Number,
-        required:True
+       
 
     },
     review:{
         type:String,
-        required:true
+        
     },
     course:{
         type:mongoose.Schema.Types.ObjectId,

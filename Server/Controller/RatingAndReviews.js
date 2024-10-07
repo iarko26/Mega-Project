@@ -7,11 +7,11 @@ const { defaultConfiguration } = require('express/lib/application');
 exports.createRating=async(req,res)=>{
     try{
         //get user id
-        const userId=req.req.existingUser.id;
+        let userId=req.req.existingUser.id;
         //fetch data from req body
-        const {rating,review,courseId}=req.body;
+        let {rating,review,courseId}=req.body;
         //check if user is enrolled or not
-        const courseDetails=await Course.findOne({
+        let courseDetails=await Course.findOne({
             _id:courseId
         },{
             studentEnrolled:{$elemMatch:{$eq:userId}}
@@ -25,7 +25,7 @@ exports.createRating=async(req,res)=>{
             })
         }
         //check if user already reviewed the course
-        const alreadyReviewed=await RatingAndReview.findOne({
+        let alreadyReviewed=await RatingAndReview.findOne({
             user:userId,
             course:courseId 
             
@@ -38,14 +38,14 @@ exports.createRating=async(req,res)=>{
             })
         }
         //create rating and review
-        const ratingReview=await RatingAndReview.create({
+        let ratingReview=await RatingAndReview.create({
             rating,review,
             user:userId,
             course:courseId
         })
 
         //update course with this rating/review
-        const updatedCourseDetails=await Course.findByIdAndUpdate({
+        let updatedCourseDetails=await Course.findByIdAndUpdate({
             _id:courseId},{
                 $push:{
                     ratingandreviews:ratingReview._id
@@ -75,9 +75,9 @@ exports.createRating=async(req,res)=>{
 exports.getAverageRating=async(req,res)=>{
     try{
         //get course id
-        const {courseId}=req.body;
+        let {courseId}=req.body;
         //calculate average rating
-        const result=await RatingAndReview.aggregate([
+        let result=await RatingAndReview.aggregate([
             {
                 $match:{
                     course:mongoose.Types.ObjectId(courseId),
@@ -124,7 +124,7 @@ exports.getAverageRating=async(req,res)=>{
 //getallrating
 exports.getAllRating=async(req,res)=>{
    try{
-        const allReviews=await RatingAndReview.find({})
+        let allReviews=await RatingAndReview.find({})
                                               .sort({rating:"desc"})
                                                .populate({
                                                 path:"user",

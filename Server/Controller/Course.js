@@ -7,11 +7,11 @@ exports.createCourse=async(req,res)=>{
     try{
         const userid=req.existingUser.id;
         //data fetch
-        const{courseName,courseDescription,whatwillyoulearn,price,category,tags}=req.body;
+        let{courseName,courseDescription,whatwillyoulearn,price,category,tags,Status,instructions}=req.body;
         //file fetch
-        const thumbnail=req.files.thumbnailImg;
+        let thumbnail=req.files.thumbnailImg;
         //validation
-        if(!courseName || !courseDescription || !whatwillyoulearn || !price || !tags || !thumbnail || !category){
+        if(!courseName || !courseDescription || !whatwillyoulearn || !price || !tags || !thumbnail || !category || !instructions){
             return res.status(400).json({
                 success:false,
                 message:"All fields are required"
@@ -50,12 +50,14 @@ exports.createCourse=async(req,res)=>{
             category:catergoryDetails._id,
             instructor:instructordetails._id,
             tags:tags,
-            thumbnail:thumbnailImg.secure_url
+            thumbnail:thumbnailImg.secure_url,
+            Status:Status,
+            instructions:instructions
 
         })
         //add course entry in user(instructor)database
         await User.findByIdAndUpdate(
-            {id:instructordetails._id},{
+            instructordetails._id,{
                 $push:{
                     courses:newCourse._id
                 }
@@ -63,9 +65,9 @@ exports.createCourse=async(req,res)=>{
             {new:true}
         )
         //add course entry in tag database
-        await Category.findByIdAndUpdate({
-            _id:category
-        },{
+        await Category.findByIdAndUpdate(
+        category
+        ,{
             $push:{
                 courses:newCourse._id
             }

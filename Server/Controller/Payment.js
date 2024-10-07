@@ -4,7 +4,7 @@ const Course=require('../Model/Course');
 const User=require('../Model/User');
 const mailSender=require('../Utils/Mailsender');
 const courseEnrollmentEmail=require('../mail/template/courseEnrollmentEmail');
-const { default: orders } = require('razorpay/dist/types/orders');
+
 
 //capture the payment and initiate the razorpay payment
 exports.capturePayment=async(req,res)=>{
