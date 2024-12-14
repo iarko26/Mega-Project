@@ -7,99 +7,102 @@ const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const User=require('../Model/User');
 const OTP=require('../Model/OTP');
-
-const crypto=require('crypto');
+const otpGenerator=require('otp-generator');
+// const crypto=require('crypto');
 const {passwordUpdate}=require('../mail/template/passwordUpdate');
 const Profile = require('../Model/Profile');
 const mailSender = require('../Utils/Mailsender');
 require('dotenv').config();
-exports.signUp=async(req,res)=>{
-    try{
-        //data fetch
-        const{firstname,lastname,email,password,confirmpassword,accountType,otp,contactNumber}=req.body;
-        //validate
-        if(!firstname || !lastname || !email || !password || !confirmpassword || !accountType || !otp || !contactNumber ){
-            return res.status(400).json({
-                success:false,
-                message:"All fields are required"
-            })
-        }
-        //check password match
-        if(password!==confirmpassword){
-            return res.status(400).json({
-                success:false,
-                message:"Password do not match"
-            })
-        }
-        //check user exists
+exports.signUp = async (req, res) => {
+    try {
+        const { 
+            firstname, 
+            lastname, 
+            email, 
+            password, 
+            confirmpassword, 
+            accountType, 
+            otp 
+        } = req.body;
 
-        const existingUser=await User.findOne({email:email});
-        if(existingUser){
+        // Validation
+        if (!firstname || !lastname || !email || !password || !confirmpassword || !accountType || !otp) {
             return res.status(400).json({
-                success:false,
-                message:"User already exists"
-            })
+                success: false,
+                message: "All fields are required"
+            });
         }
 
-        //find most recent otp stored in db
-
-const recentOTP=await OTP.findOne({email}).sort({createdAt:-1}).limit(1);
-        console.log(recentOTP);
-         //validate otp
-         if(!recentOTP){
+        // Check password match
+        if (password !== confirmpassword) {
             return res.status(400).json({
-                success:false,
-                message:"OTP not found"
-            })
-         }
-         else if(otp!==recentOTP[0].otp){
+                success: false,
+                message: "Passwords do not match"
+            });
+        }
+
+        // Check user exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
             return res.status(400).json({
-                success:false,
-                message:"Invalid OTP"
-            })
-         }
-//hash password
-const hashedpassword=await bcrypt.hash(password,10);
-//create the user 
-let approved='';
-approved==="Instructor" ? (approved=false) : (approved=true);
-//create a profile
-const ProfileDetails=await Profile.create({
-    gender:null,
-    dob:null,
-    about:"",
-    contactNumber:contactNumber
-})
-//create a user for the db
-const newUser=await User.create({
-    firstname:firstname,
-    lastname:lastname,
-    email:email,
-    password:hashedpassword,
-    accountType:accountType,
-    contactNumber:contactNumber,
-    approved:approved,
-    additionalInfo:ProfileDetails._id,
-    image:`https://api.dicebear.com/5.x/initials/svg?seed=${firstname}+${lastname}`
+                success: false,
+                message: "User already exists"
+            });
+        }
 
+        // Verify OTP
+        const recentOTP = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+        if (recentOTP.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP not found"
+            });
+        } else if (otp !== recentOTP[0].otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            });
+        }
 
+        // Hash password
+        const hashedpassword = await bcrypt.hash(password, 10);
 
-})
-//return response
-return res.status(200).json({
-    success:true,
-    message:"User registered successfully",
-    newUser:newUser
-})
+        // Determine approval status
+        let approved = accountType === "Instructor" ? false : true;
 
+        // Create profile
+        const ProfileDetails = await Profile.create({
+            gender: null,
+            dob: null,
+            about: "",
+            contactNumber: null
+        });
 
+        // Create user
+        const user = await User.create({
+            firstname,
+            lastname,
+            email,
+            password: hashedpassword,
+            accountType,
+            approved,
+            additionalInfo: ProfileDetails._id,
+            image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstname}+${lastname}`
+        });
 
-    }catch(error){
-        console.error(error);
+        return res.status(200).json({
+            success: true,
+            message: "User registered successfully",
+            user: user
+        });
+
+    } catch (error) {
+        console.error("Signup Error:", error);
         return res.status(500).json({
-            success:false,
-            message:"User cannot be registered"
-        })
+            success: false,
+            message: "User registration failed",
+            error: error.message
+        });
     }
 }
 exports.login=async(req,res)=>{
@@ -122,17 +125,18 @@ exports.login=async(req,res)=>{
                 message:"User is not registered! Please register"
             })
         }
-        const payload={
-            email:existingUser.email,
+      
+        if(await bcrypt.compare(password,existingUser.password)){
+            const token=jwt.sign(
+              {
+                email:existingUser.email,
             id:existingUser._id,
             accountType:existingUser.accountType
-            
-
-        }
-        if(await bcrypt.compare(password,existingUser.password)){
-            const token=jwt.sign(payload,process.env.JWT_SECRET,{
-                expiresIn:'24h'
-            })
+              },
+              process.env.JWT_SECRET,{
+                    expiresIn: "24h",
+              }
+                )
             const user=existingUser.toObject();
             user.token=token;
             user.password=undefined;
@@ -144,8 +148,8 @@ exports.login=async(req,res)=>{
             res.cookie('token',token,options).status(200).json({
                 success:true,
                 message:"User logged in successfully",
-                user:user,
-                token:token
+                user,
+               token
             })
         }
         else{
@@ -180,21 +184,21 @@ exports.sendOTP=async(req,res)=>{
 
         })
     }
-     const otp=crypto.randomInt(100000,999999).toString();
+     var otp=otpGenerator.generate(6,{
+        upperCaseAlphabets: false,
+			lowerCaseAlphabets: false,
+			specialChars: false,
+     })
     
     
     const result=await OTP.findOne({otp:otp});
-    while(result){
-        otp=crypto.randomInt(100000,999999).toString();
-        result=await OTP.findOne({otp:otp});
-    }
-
     console.log(result);
     console.log("OTP",otp);
-    // while(result){
-    //     otp=otpGenerator.generate(6,{upperCaseAlphabets: false
-    // });
-    // }
+    while(result){
+        otp=otpGenerator.generate(6,{
+            upperCaseAlphabets: false,
+        })
+    }
     const otppayload={email,otp};
     const otpbody=await OTP.create(otppayload);
     console.log(otpbody);
@@ -225,24 +229,16 @@ exports.changePassword=async(req,res)=>{
 //get user data
 const userdetails=await User.findById(req.existingUser.id);
 //get old and new password and confirm password from req body
-const {oldPassword,newPassword,confirmPassword}=req.body;
+const {oldPassword,newPassword}=req.body;
 //validate old password
 const isPasswordValid=await bcrypt.compare(
     oldPassword,
     userdetails.password
 )
 if(!isPasswordValid){
-    return res.status(400).json({
-        success:false,
-        message:"Invalid old password"
-    })
+    return res.status(400).  json({ success: false, message: "The password is incorrect" })
 }
-if(newPassword!==confirmPassword){
-    return res.status(400).json({
-        success:false,
-        message:"Password do not match"
-    })
-}
+
 //update password
 const encryptedPassword=await bcrypt.hash(newPassword,10);
 const updatedUSerdetails=await User.findByIdAndUpdate(

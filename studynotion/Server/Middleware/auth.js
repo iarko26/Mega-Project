@@ -4,21 +4,24 @@
 //isinstructor
 
 const jwt=require('jsonwebtoken');
-require('dotenv').config();
-const User=require('../Model/User');
+const dotenv=require('dotenv');
+dotenv.config();
+
 
 exports.auth=async(req,res,next)=>{
     try{
-        const token=req.body.token || req.cookies.token || req.header("Authorization").replace("Bearer ", "") ;
+        const token = req.body.token || req.cookies.token || req.header("Authorization").replace("Bearer ", "");
+        console.log("Received Token:", token);
+
         if(!token){
             return res.status(401).json({
                 success:false,
-                message:"No Token Provided",
+                message:"Token is missing"
             })
         }
         try{
             const decoded=jwt.verify(token,process.env.JWT_SECRET);
-            console.log(decoded);
+            console.log("Decoded Token:", decoded);
             req.existingUser=decoded;
 
         }catch(error){

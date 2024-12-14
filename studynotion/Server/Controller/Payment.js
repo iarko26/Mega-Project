@@ -139,6 +139,7 @@ exports.verifysignature=async(req,res)=>{
 
                 )
             )
+            console.log(emailresponse);
 
         }
         catch(error){

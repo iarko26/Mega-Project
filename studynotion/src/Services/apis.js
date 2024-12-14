@@ -1,5 +1,5 @@
 
-const BASE_URL=process.env.REACT_APP_BASE_URL;
+export const BASE_URL='http://localhost:4000/api/v1'
 //auth endpoints
 export const authEndpoints={
     SIGNUP_API:BASE_URL + "/auth/signup",
@@ -16,7 +16,8 @@ export const profileEndpoints={
    
     GETUSERDETAILS_API:BASE_URL + "/profile/getUserDetails",
     
-    GETENROLLEDCOURSES_API:BASE_URL + "/profile/getEnrolledCourses"
+    GETENROLLEDCOURSES_API:BASE_URL + "/profile/getEnrolledCourses",
+    GETINSTURCTORDATA_API:BASE_URL + "/profile/instructorDashboard"
 }
 //student endpoints
 export const studentEndpoints={
@@ -27,6 +28,12 @@ export const studentEndpoints={
 //course endpoints 
 export const courseEndpoints={
     CREATECOURSE_API:BASE_URL + "/course/createCourse",
+    EDITCOURSE_API:BASE_URL + "/course/editCourse",
+    DELETECOURSE_API:BASE_URL + "/course/deleteCourse",
+    COURSECATERGORY_API:BASE_URL + "/course/getAllCategories",
+    GETFULLALLCOURSES_API:BASE_URL + "/course/getFullCourseDetails",
+    GETINSTRUCTORCOURSES_API:BASE_URL + "/course/getInstructorCourses",
+
     GETALLCOURSES_API:BASE_URL + "/course/getAllCourses",
     GETCOURSEDETAILS_API:BASE_URL + "/course/getCourseDetails",
     CREATESECTION_API:BASE_URL + "/course/addSection",
@@ -36,12 +43,17 @@ export const courseEndpoints={
     UPDATESUBSECTION_API:BASE_URL + "/course/updateSubSection",
     DELETESUBSECTION_API:BASE_URL + "/course/deleteSubSection",
     CREATERATING_API:BASE_URL + "/course/createRating",
+    COURSE_PROGRESS_UPDATE:BASE_URL + "/course/updateCourseProgress",
+   LECTURE_COMPLETION_API: BASE_URL + "/course/markedAsCompleted",
+     CREATECATEFORY_API:BASE_URL + "/course/addCategory",
+     ADD_COURSE_TO_CATEGORY_API: BASE_URL + "/course/addCourseToCategory"
+
 
 
 }
 export const categories={
     CATEGORIES_API:BASE_URL + "/course/getAllCategories",
-    CREATECATEFORY_API:BASE_URL + "/course/addCategory"
+    
 
 }
 export const catalogData={
@@ -52,12 +64,12 @@ export const ratingsEndpoints={
     AVERAGERATING_API:BASE_URL + "/course/getAverageRating"
 }
 export const contactUsEndpoints={
-    CONTACTUS_API:BASE_URL + "/reach/contactus"
+    CONTACTUS_API:BASE_URL + "/reach/contact"
 }
 //setting page
 export const settingsEndpoints={
     UPDATEDISPLAYPICTURE_API:BASE_URL + "/profile/updateDisplayPicture",
     UPDATEPROFILE_API:BASE_URL + "/profile/updateProfile",
     DELETEPROFILE_API:BASE_URL + "/profile/deleteProfile",
-     CHANGEPASSWORD_API:BASE_URL + "/auth/changepassword"
+    CHANGEPASSWORD_API:BASE_URL + "/auth/changepassword"
 }

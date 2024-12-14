@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
 import { Link,useNavigate } from 'react-router-dom'
-import { Login } from '../../../Services/operations/authAPI'
+import { Login } from '../../../Services/operations/authAPI';
 import { useDispatch } from 'react-redux';
 
 function LoginForm() {
@@ -15,7 +15,7 @@ function LoginForm() {
   })
   const{email,password}=formData;
   let changehandler=(e)=>{
-    setFormData(prevdata=>({
+    setFormData((prevdata)=>({
       ...prevdata,
       [e.target.name]:e.target.value
     }))

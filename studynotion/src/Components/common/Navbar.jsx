@@ -3,8 +3,9 @@ import { Link,matchPath,useLocation} from 'react-router-dom'
 import Logo from '../../assets/Logo/Logo-Full-Dark.png'
 import {NavbarLinks} from '../../data/navbar-links'
 import {IoIosArrowDropdownCircle} from "react-icons/io"
+import { ACCOUNT_TYPE } from '../../utils/constants'
 import { useSelector } from 'react-redux'
-import { FaCartShopping } from "react-icons/fa6";
+import { AiOutlineMenu, AiOutlineShoppingCart } from "react-icons/ai"
 import CustomButton from '../core/Homepage/CustomButton'
 import Profiledropdown from '../core/Auth/Profiledropdown'
 import { apiconnector } from '../../Services/apiconnector'
@@ -57,18 +58,19 @@ function matchRoute(route){
                         <li key={i} >
                             {
                                 elem.title === "Catalog" ? (
-                               <div className='flex items-center gap-2 group'>
+                               <>
+                               <div className='group relative flex cursor-pointer items-center gap-1'>
                                     <p>{elem.title}</p>
                                     <IoIosArrowDropdownCircle/>
-                                    <div className='invisible absolute left-[50%] rounded-md opacity-0 transition-all duration-200  bg-white text-richblack-900 group-hover:visible group-hover:opacity-100 w-[300px] flex flex-col p-4 
-                                   translate-x-[-50%] translate-y-[80%] '>
+                                    <div className="invisible absolute left-[50%] top-[50%] z-[1000] flex w-[200px] translate-x-[-50%] translate-y-[3em] flex-col rounded-lg bg-richblack-5 p-4 text-richblack-900 opacity-0 transition-all duration-150 group-hover:visible group-hover:translate-y-[1.65em] group-hover:opacity-100 lg:w-[300px]">
+                                    <div className="absolute left-[50%] top-0 -z-10 h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5"></div>
                                      
                                       
                                         {
                                           loading?(<p className='text-center'>loading...</p>):(sublinks && sublinks.length)?(
                                             sublinks.map((sublink,i)=>{
                                               return(
-                                                <Link key={i}>
+                                                <Link key={i}  className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50">
                                                   {
                                                     sublink.name
                                                   }
@@ -84,6 +86,7 @@ function matchRoute(route){
                                       
                                     </div>
                               </div>
+                               </>
                                 ):(
                                     
                                    <Link to={elem?.path}>
@@ -105,16 +108,14 @@ function matchRoute(route){
       {/* login and sighnup dashboard */}
       <div className='flex items-center gap-x-4'>
           {
-            user && user?.accountType === "student" &&(
+            user && user?.accountType !== ACCOUNT_TYPE.INSTRUCTOR &&(
                   <Link to='/dashboard/cart' className='relative'>
-                      <FaCartShopping/>
+                  <AiOutlineShoppingCart className="text-2xl text-richblack-100" />
                       {
                         totalItems>0 && (
-                          <span>
-                            {
-                              totalItems
-                            }
-                          </span>
+                          <span className="absolute -bottom-2 -right-2 grid h-5 w-5 place-items-center overflow-hidden rounded-full bg-richblack-600 text-center text-xs font-bold text-yellow-100">
+                                {totalItems}
+                             </span>
                         )
                       }
 
@@ -151,6 +152,9 @@ function matchRoute(route){
           }
         
       </div>
+          <button className="mr-4 md:hidden">
+          <AiOutlineMenu fontSize={24} fill="#AFB2BF" />
+        </button>
 
       
       </div>

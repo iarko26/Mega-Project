@@ -5,43 +5,38 @@ import { useDispatch,useSelector } from 'react-redux'
 import { BiArrowBack } from "react-icons/bi";
 import { RxCountdownTimer } from "react-icons/rx";
 import { useNavigate } from 'react-router-dom';
-import { sendOtp,signUp } from '../Services/operations/authAPI';
+import { sendOtp,signup } from '../Services/operations/authAPI';
 function VerifyEmail() {
-  const[otp,setotp]=useState('');
-  const {signupuserData,loading}=useSelector((state)=>state.auth);
+  const [otp,setotp]=useState('');
+  const {signupData,loading}=useSelector((state)=>state.auth)
   const dispatch=useDispatch();
   const navigate=useNavigate();
   useEffect(()=>{
-    if(!signupuserData){
+    if(!signupData){
       navigate('/signup')
     }
-
-
   },[])
-
-   let handleVerifyAndSignup=(e)=>{
+  let handleVerifyAndSignup=(e)=>{
     e.preventDefault();
     const{
+      firstname,
+      lastname,
+      accountType,
+      email,
+      password,
+      confirmpassword,
+    }=signupData;
+    dispatch(signup(
       accountType,
       firstname,
       lastname,
       email,
       password,
-      confirmPassword,
-
-    }=signupuserData
-    console.log(signupuserData);
-    console.log(otp);
-
-    dispatch(signUp(accountType,
-      firstname,
-      lastname,
-      email,
-      password,
-      confirmPassword,
+      confirmpassword,
       otp,
-      navigate))
-   }
+      navigate
+    ))
+  }
   return (
     <div className="min-h-[calc(100vh-3.5rem)] grid place-items-center">
        {
@@ -90,7 +85,7 @@ function VerifyEmail() {
 
               <button 
               className="flex items-center text-blue-200 gap-x-2"
-              onClick={()=>dispatch(sendOtp(signupuserData.email))}>
+              onClick={()=>dispatch(sendOtp(signupData.email))}>
                 <RxCountdownTimer/>
                 Resend it
               </button>

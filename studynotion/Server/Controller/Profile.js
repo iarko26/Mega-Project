@@ -2,41 +2,37 @@ const User=require('../Model/User');
 const Profile=require('../Model/Profile');
 const Course=require('../Model/Course');
 const {uploadimg}=require('../Utils/imageUploader');
+const CourseProgress=require('../Model/CourseProgress');
+const SecToDuration=require('../Utils/secToDuration');
 require('dotenv').config();
 exports.updateProfile=async(req,res)=>{
     try{
             //data fetch and user id
-            const {dob='',about='',contactNumber,gender}=req.body;
+            const {dob='',about='',contactNumber="",gender="",  firstname = "",
+                lastname = ""}=req.body;
             const UserId=req.existingUser.id;
-            //validation
-            if(!contactNumber || !gender || !UserId){
-                return res.status(400).json({
-                    success:false,
-                    message:"All fields are required"
-                })
-            }
+            
             //find user and profile
             const userdetails=await User.findById(UserId);
             const ProfileDetails=await Profile.findById(userdetails.additionalInfo);
+            const user=await User.findByIdAndUpdate(UserId,{
+                firstname,
+                lastname
+            })
+            await user.save();
             //update profile
-            const updatedProfile=await Profile.findByIdAndUpdate({
-                _id:ProfileDetails.id
-                
-            },{
-                dob:dob,
-                about:about,
-                contactNumber:contactNumber,
-
-            },
-            {new:true}
-            )
+            ProfileDetails.dob=dob;
+            ProfileDetails.about=about;
+            ProfileDetails.contactNumber=contactNumber;
+            ProfileDetails.gender=gender;
             //save database
-            await updatedProfile.save();
+            await ProfileDetails.save();
+            const updatedUserDetails=await User.findById(UserId).populate('additionalInfo').exec();
             //return response
             return res.status(200).json({
                 success:true,
                 message:"Profile updated successfully",
-                data:updatedProfile
+                updatedUserDetails
             })
             
     }
@@ -171,7 +167,52 @@ exports.getEnrolledCourses=async(req,res)=>{
         //get user details
         const userDetails=await User.findOne({
             _id:UserId
-        }).populate("courses").exec();
+        })
+        .populate({
+            path: "courses",
+            populate: {
+              path: "courseContent",
+              populate: {
+                path: "Subsection",
+              },
+            },
+          }).exec();
+          
+          userDetails=userDetails.toObject();
+           var SubsectionLength = 0
+    for (var i = 0; i < userDetails.courses.length; i++) {
+      let totalDurationInSeconds = 0
+      SubsectionLength = 0
+      for (var j = 0; j < userDetails.courses[i].courseContent.length; j++) {
+        totalDurationInSeconds += userDetails.courses[i].courseContent[
+          j
+        ].Subsection.reduce((acc, curr) => acc + parseInt(curr.timeDuration), 0)
+        userDetails.courses[i].totalDuration = SecToDuration(
+          totalDurationInSeconds
+        )
+        SubsectionLength +=
+          userDetails.courses[i].courseContent[j].Subsection.length
+      }
+      let courseProgressCount = await CourseProgress.findOne({
+        courseId: userDetails.courses[i]._id,
+        userId: UserId,
+      })
+      courseProgressCount = courseProgressCount?.completeVidoes.length
+      if (SubsectionLength === 0) {
+        userDetails.courses[i].progressPercentage = 100
+      } else {
+        // To make it up to 2 decimal point
+        const multiplier = Math.pow(10, 2)
+        userDetails.courses[i].progressPercentage =
+          Math.round(
+            (courseProgressCount / SubsectionLength) * 100 * multiplier
+          ) / multiplier
+      }
+    }
+
+
+
+
         //validate
         if(!userDetails){
             return res.status(404).json({
@@ -195,3 +236,34 @@ exports.getEnrolledCourses=async(req,res)=>{
         })
     }
 }
+exports.instructorDashboard=async(req,res)=>{
+    try{
+        const courseData=await Course.find({"instructor":req.existingUser.id});
+        const courseDetails=courseData.map((course)=>{
+            const totalStudentsEnrolled=course.studentEnrolled.length;
+            const totalAmountGenerated=totalStudentsEnrolled*course.price;
+            const courseDataWithStats={
+                _id:course._id,
+                courseName:course.courseName,
+                courseDescription:course.courseDescription,
+                totalStudentsEnrolled,
+                totalAmountGenerated
+            }
+            return courseDataWithStats;
+        })
+        return res.status(200).json({
+            success:true,
+            message:"Courses fetched successfully",
+            data:courseDetails
+        })
+
+    }
+    catch(error){
+        console.error(error);
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+

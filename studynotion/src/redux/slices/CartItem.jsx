@@ -1,9 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 const initialState={
-    carts:[],
-    total:0,
-    totalItems:0
+   cart: localStorage.getItem("cart")
+    ? JSON.parse(localStorage.getItem("cart"))
+    : [],
+  total: localStorage.getItem("total")
+    ? JSON.parse(localStorage.getItem("total"))
+    : 0,
+  totalItems: localStorage.getItem("totalItems")
+    ? JSON.parse(localStorage.getItem("totalItems"))
+    : 0,
 
 }
 const cartSlice=createSlice({
@@ -11,45 +17,48 @@ const cartSlice=createSlice({
     initialState:initialState,
     reducers:{
         //addToCart
-        addCart:(state,action)=>{
-            const course=action.payload
-            const existingCourse=state.carts.find((item)=>item._id===course._id);
-            if(existingCourse){
-                toast.error("Course already in cart")
-                return
-            }
-            state.carts.push(course)
-            state.totalItems++
-            state.total+=course.price;
-            toast.success("Course added to cart")
-
-        },
-        
-        //removeFromCart
-        removecart:(state,action)=>{
-            const courseId=action.payload;
-            const existingCourse=state.carts.find((item)=>item._id===courseId);
-            if(existingCourse){
-                state.totalItems--
-                state.total-=existingCourse.price;
-                state.carts=state.carts.filter((item)=>item._id!==courseId);
-                toast.success("Course removed from cart")
-                
-               
-            }
-
-
-        },
-        //resetCart
-        resetCart:(state)=>{
-            state.carts=[]
-            state.total=0
-            state.totalItems=0
+       addToCart(state,value){
+        const course=value.payload;
+        const index = state.cart.findIndex((item) => item._id === course._id)
+        if(index>0){
+            toast.error("Course already in cart")
+            return
         }
+        state.cart.push(course);
+        state.totalItems++
+        state.total+=course.price
+        localStorage.setItem("cart", JSON.stringify(state.cart))
+        localStorage.setItem("total", JSON.stringify(state.total))
+        localStorage.setItem("totalItems", JSON.stringify(state.totalItems))
+        toast.success("Course Added to Cart")
+
+       },
+       removeFromCart(state,value){
+        const courseId=value.payload;
+        const index = state.cart.findIndex((item) => item._id === courseId)
+        if(index>=0){
+            state.totalItems--
+            state.total-=state.cart[index].price
+            state.cart.splice(index,1)
+            localStorage.setItem("cart", JSON.stringify(state.cart))
+        localStorage.setItem("total", JSON.stringify(state.total))
+        localStorage.setItem("totalItems", JSON.stringify(state.totalItems))
+        // show toast
+        toast.success("Course removed from cart")
+        }
+       },
+       resetCart(state){
+        state.cart=[]
+        state.total=0
+        state.totalItems=0
+        localStorage.removeItem("cart")
+        localStorage.removeItem("total")
+        localStorage.removeItem("totalItems")
+       }
     }
 
 
 });
-export const {addCart,removecart,resetCart}=cartSlice.actions;
+export const {addToCart,removeFromCart,resetCart}=cartSlice.actions;
 const cartReducer=cartSlice.reducer;
 export default cartReducer;

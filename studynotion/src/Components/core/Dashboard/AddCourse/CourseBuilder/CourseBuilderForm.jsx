@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Tab() {
+function CourseBuilderForm() {
   return (
     <div>
       
@@ -8,4 +8,4 @@ function Tab() {
   )
 }
 
-export default Tab
+export default CourseBuilderForm

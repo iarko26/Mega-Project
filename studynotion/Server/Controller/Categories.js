@@ -1,5 +1,6 @@
 
 const Category=require('../Model/Category');
+const Course = require('../Model/Course');
 
 //create tag api
 exports.createcategory=async(req,res)=>{
@@ -59,7 +60,7 @@ exports.getcatergoryPage=async(req,res)=>{
         const {categoryId}=req.body;
         //get courses for specified categoryId
         const selectedCategory=await Category.findById(categoryId)
-                                             .populate("courses")  
+        .populate({path:"courses",match:{Status:"Published"},populate:([{path:"instructor"},{path:"ratingandreviews"}])}) 
                                              .exec();
         //validation
         if(!selectedCategory){
@@ -68,22 +69,36 @@ exports.getcatergoryPage=async(req,res)=>{
                 message:"Data not found"
             })
         }
+        if(selectedCategory.courses.length==0){
+            console.log("No courses found for the selected category.");
+			return res.status(404).json({
+				success: false,
+				message: "No courses found for the selected category.",
+			});
+        }
+      
+        const categoriesExceptSelected = await Category.find({
+			_id: { $ne: categoryId },
+		}).populate({path:"courses",match:{Status:"Published"},populate:([{path:"instructor"},{path:"ratingandreviews"}])});
+		let differentCourses = [];
+		for (const category of categoriesExceptSelected) {
+			differentCourses.push(...category.courses);
+		}
         //get different courses for the category
-        const allcategories=await Category.find({
-                                                _id:{$ne:categoryId}
-                                            })
-                                            .populate("courses")
-                                            .exec();
+        const allcategories= await Category.find().populate({path:"courses",match:{Status:"Published"},populate:([{path:"instructor"},{path:"ratingandreviews"}])});
         //get top 10 selling courses
-        const toptenCourses=await Category.find({}).sort({studentsEnrolled:-1}).limit(10);
+        const allCourses=allcategories.flatMap((category)=>category.courses)
+        const mostSellingCourses = allCourses
+			.sort((a, b) => b.sold - a.sold)
+			.slice(0, 10);
 
         //return response
         return res.status(200).json({
             success:true,
             data:{
-                selectedCategory,
-                allcategories,
-                toptenCourses
+                selectedCategory:selectedCategory,
+                differentCourses:differentCourses,
+                mostSellingCourses:mostSellingCourses
             }
         })
 
@@ -96,3 +111,43 @@ exports.getcatergoryPage=async(req,res)=>{
         })
     }
 }
+exports.addCourseToCategory = async (req, res) => {
+	const { courseId, categoryId } = req.body;
+	
+	try {
+		const category = await Category.findById(categoryId);
+		if (!category) {
+			return res.status(404).json({
+				success: false,
+				message: "Category not found",
+			});
+		}
+		const course = await Course.findById(courseId);
+		if (!course) {
+			return res.status(404).json({
+				success: false,
+				message: "Course not found",
+			});
+		}
+		if(category.courses.includes(courseId)){
+			return res.status(200).json({
+				success: true,
+				message: "Course already exists in the category",
+			});
+		}
+		category.courses.push(courseId);
+		await category.save();
+		return res.status(200).json({
+			success: true,
+			message: "Course added to category successfully",
+		});
+	}
+	catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: "Internal server error",
+			error: error.message,
+		});
+	}
+}
+
