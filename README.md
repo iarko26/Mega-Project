@@ -1,5 +1,7 @@
 
 
+
+
 ## **StudyNotion**
 
 StudyNotion is a fully functional ed-tech platform that enables users to create, consume, and rate educational content. The platform is built using the MERN stack, which includes ReactJS, NodeJS, MongoDB, and ExpressJS.
@@ -12,11 +14,15 @@ A platform for instructors to showcase their expertise and connect with learners
 
 The StudyNotion ed-tech platform consists of three main components: the front end, the back end, and the database. The platform follows a client-server architecture, with the front end serving as the client and the back end and database serving as the server.
 
+
+
 ## Architecture Diagram
 Here is a high-level diagram that illustrates the architecture of the StudyNotion ed-tech platform:
 ![image](https://github.com/user-attachments/assets/4b2e409f-fac0-4fbe-a173-685b2b8a667e)
 ## Database:
 ![image](https://github.com/user-attachments/assets/40470b98-9ae4-484a-8d5b-6ac811c9fd85)
+## Demo:
+![image](https://github.com/user-attachments/assets/c47e8771-301c-4775-ba44-8a90faa6271e)
 
 ## Tools
 1. Reactjs
@@ -47,6 +53,7 @@ Here is a high-level diagram that illustrates the architecture of the StudyNotio
 3. Payment Integration: Students will purchase and enroll on courses by completing the checkout flow that is followed by Razorpay integration for payment handling.
 4. Cloud-based media management: StudyNotion uses Cloudinary, a cloud-based media management service, to store and manage all media content, including images, videos, and documents.
 5. Markdown formatting: Course content in document format is stored in Markdown format, which allows for easier display and rendering on the front end
+
 
 
 
