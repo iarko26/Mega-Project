@@ -62,9 +62,6 @@ To install Project Title, follow these steps:
 6. Open the project in your browser at http://localhost:3000 to view your project.
    
 
-## **Authors and Acknowledgment**
-
-Project Title was created by **[Arnob Ghosh]([https://github.com/username](https://github.com/iarko26))**.
 
 
 ## **Conclusion**
