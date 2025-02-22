@@ -15,6 +15,8 @@ exports.createCourse=async(req,res)=>{
         let{courseName,courseDescription,whatwillyoulearn,price,category,tags,Status,instructions}=req.body;
         //file fetch
         let thumbnail=req.files.thumbnailImg;
+        
+
         //validation
         if(!courseName || !courseDescription || !whatwillyoulearn || !price || !tags || !thumbnail || !category || !instructions){
             return res.status(400).json({
@@ -48,13 +50,13 @@ exports.createCourse=async(req,res)=>{
         console.log(thumbnailImg);
         //create new course in database
         const newCourse=await Course.create({
-            courseName:courseName,
-            courseDescription:courseDescription,
+            courseName,
+            courseDescription,
             whatwillyoulearn:whatwillyoulearn,
-            price:price,
+            price,
             category:catergoryDetails._id,
             instructor:instructordetails._id,
-            tags:tags,
+            tags,
             thumbnail:thumbnailImg.secure_url,
             Status:Status,
             instructions:instructions
@@ -62,7 +64,7 @@ exports.createCourse=async(req,res)=>{
         })
         //add course entry in user(instructor)database
         await User.findByIdAndUpdate(
-            instructordetails._id,{
+            {_id:instructordetails._id},{
                 $push:{
                     courses:newCourse._id
                 }
@@ -71,7 +73,7 @@ exports.createCourse=async(req,res)=>{
         )
         //add course entry in tag database
         await Category.findByIdAndUpdate(
-        category
+       {_id: category}
         ,{
             $push:{
                 courses:newCourse._id

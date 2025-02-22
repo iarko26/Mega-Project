@@ -20,7 +20,7 @@ export function updateDisplayPicture(token,formData){
                 UPDATEDISPLAYPICTURE_API,
                 formData,{
                     "Content-Type": "multipart/form-data",
-                    Authorization: `Bearer ${token}`, 
+                    Authorisation: `Bearer ${token}`, 
                 }
 
             )

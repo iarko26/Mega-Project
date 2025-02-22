@@ -22,34 +22,34 @@ const {
     CREATECATEFORY_API,
     ADD_COURSE_TO_CATEGORY_API
 }=courseEndpoints
-export const addCourseDetails=async (token,data)=>{
-    let result=null;
-    const toastId=toast.loading("Loading...")
-    try{
-        const response=await apiconnector(
-            "POST",
-            CREATECOURSE_API,
-            data,
-            {
-                "Content-Type": "multipart/form-data",
-                Authorization:`Bearer ${token}`,
-            }
-
-        )
-        console.log("CREATECOURSE API RESPONSE............",response)
-        if (!response.data.success){
-            throw new Error(response?.data?.message)
-        }
-        toast.success("Course Created Successfully")
-        result=response?.data?.data
-    }
-    catch(error){
-        console.log("CREATECOURSE API ERROR............",error)
-        toast.error("Could not create course")
-    }
-    toast.dismiss(toastId)
-    return result
+export const addCourseDetails = async (data, token) => {
+  let result = null;
+  const toastId = toast.loading("Loading...");
+  try {
+      const response = await apiconnector(
+          "POST",
+          CREATECOURSE_API,
+          data,
+          {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+          }
+      );
+      
+      if (!response?.data?.success) {
+          throw new Error(response?.data?.message || "Could Not Add Course Details");
+      }
+      
+      toast.success("Course Created Successfully");
+      result = response?.data?.data;
+  } catch (error) {
+      console.log("CREATECOURSE API ERROR............", error);
+      toast.error(error.message || "Could not create course");
+  }
+  toast.dismiss(toastId);
+  return result;
 }
+
 export const editCourseDetails=async(data,token)=>{
     let result=null;
     const toastId=toast.loading("Loading...")

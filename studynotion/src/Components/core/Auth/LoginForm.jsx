@@ -61,7 +61,7 @@ function LoginForm() {
 
       }
       </span>
-      <Link to='/reset-password'>
+      <Link to='/forgot-password'>
       <p className="mt-1 ml-auto max-w-max text-xs text-blue-200 font-semibold">
             Forgot Password?
           </p>

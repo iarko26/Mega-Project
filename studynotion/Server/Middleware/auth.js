@@ -5,6 +5,7 @@
 
 const jwt=require('jsonwebtoken');
 const dotenv=require('dotenv');
+const User = require('../Model/User');
 dotenv.config();
 
 
@@ -46,7 +47,8 @@ exports.auth=async(req,res,next)=>{
 //isStudent
 exports.isStudent=async(req,res,next)=>{
     try{
-        if(req.existingUser.accountType!=="Student"){
+        const userDetails=await User.findOne({email:req.existingUser.email});
+        if(userDetails.accountType!=="Student"){
             return res.status(401).json({
                 success:false,
                 message:"Access Denied for Student"
@@ -82,7 +84,9 @@ exports.isAdmin=async(req,res,next)=>{
 }
 exports.isInstructor=async(req,res,next)=>{
     try{
-        if(req.existingUser.accountType!=="Instructor"){
+        const userDetails=await User.findOne({email:req.existingUser.email});
+        console.log("User Details:", userDetails);
+        if(userDetails.accountType!=="Instructor"){
             return res.status(401).json({
                 success:false,
                 message:"Access Denied for Instructor"
