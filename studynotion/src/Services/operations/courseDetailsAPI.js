@@ -188,11 +188,25 @@ export const deleteCourse = async (data, token) => {
     let result = null
     const toastId = toast.loading("Loading...")
     try {
+      // Check if sectionId is valid
+      const sectionId = data.get('sectionId');
+      if (!sectionId || sectionId === "undefined") {
+        throw new Error("Valid Section ID is required");
+      }
+  
+      // Log the form data to debug
+      console.log("Creating subsection with data:", {
+        sectionId: sectionId,
+        title: data.get('title'),
+        description: data.get('description'),
+        video: data.get('video') // Make sure it matches the backend field name
+      });
+  
       const response = await apiconnector("POST", CREATESUBSECTION_API, data, {
-        Authorization:`Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       })
       console.log("CREATE SUB-SECTION API RESPONSE............", response)
-      if (!response.data.success){
+      if (!response.data.success) {
         throw new Error("Could Not Add Lecture")
       }
       toast.success("Lecture Added")

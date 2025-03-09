@@ -3,13 +3,14 @@ import { useForm } from 'react-hook-form'
 import { useDispatch, useSelector } from 'react-redux'
 import {MdAddCircleOutline} from "react-icons/md"
 import NestedView from './NestedView';
-import { setCourse, setEditCourse } from '../../../../../redux/slices/Courseslice';
+import { setCourse, setEditCourse,setStep } from '../../../../../redux/slices/Courseslice';
 import { toast } from 'react-toastify';
 import { updateSection,createSection } from '../../../../../Services/operations/courseDetailsAPI';
 function CourseBuilderForm() {
   const {register, handleSubmit, setValue, formState:{errors} } = useForm();
   const {course}=useSelector((state)=>state.course)
   const {token}=useSelector((state)=>state.auth)
+
   const dispatch=useDispatch();
   const [editSectionName,seteditSectionName]=useState(null)
   const [loading,setLoading]=useState(false)
@@ -71,10 +72,10 @@ const goToNext=()=>{
 }
   return (
     <div className='text-richblack-900'>
-     <p> Course Builder </p>
+     <p className="text-2xl font-semibold text-richblack-900">Course Builder</p>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-        <label htmlFor='sectionName'>Section name <sup>*</sup></label>
+        <label htmlFor='sectionName' className="text-sm text-richblack-900">Section name <sup>*</sup></label>
            <input
              id='sectionName'
              type='text'
@@ -104,13 +105,13 @@ const goToNext=()=>{
         </div>
       </form>
       {
-        course.courseContent.length>0 &&
+            course.courseContent.length>0 &&
         (
          <NestedView handleChangeEditSectionName={handleChangeEditSectionName}/>
         )
       }
-      <div className="flex justify-end gap-x-3">
-         <button onClick={goBack}
+      <div className="flex justify-end gap-x-3 mt-6">
+         <button onClick={goBack}         
         className={`flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900`}
          >
             Back
