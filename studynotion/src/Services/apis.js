@@ -1,5 +1,5 @@
 
-export const BASE_URL='http://localhost:4000/api/v1'
+export const BASE_URL='http://localhost:5000/api/v1'
 //auth endpoints
 export const authEndpoints={
     SIGNUP_API:BASE_URL + "/auth/signup",
@@ -23,6 +23,7 @@ export const profileEndpoints={
 export const studentEndpoints={
     COURSEPAYMENT_API:BASE_URL + "/payment/capturePayment",
     COURSEVERIFY_API:BASE_URL + "/payment/verifySignature",
+    SEND_PAYMENT_SUCCESS_EMAIL_API:BASE_URL + "/payment/sendPaymentSuccessEmail"
     
 }
 //course endpoints 

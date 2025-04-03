@@ -256,70 +256,70 @@ exports.getcourseDetails=async(req,res)=>{
     }
 }
 //get full course details
-exports.getFullCourseDetails=async(req,res)=>{
-    try{
-        const {courseId}=req.body;
-        const UserId=req.existingUser.id;
-        const courseDetails=await Course.findOne({
-            _id:courseId
-        })
-        .populate({
-            path:"instructor",
-            populate:{
-                path:"additionalInfo",
-            }
-        })
-        .populate('category')
-        .populate({
-            path:'courseContent',
-            populate:{
-                path:'Subsection',
-                
-            }
-        })
-        .populate('ratingandreviews')
-        .exec();
+exports.getFullCourseDetails = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const UserId = req.existingUser.id;
 
-        let courseProgressCount=await CourseProgress.findOne({
-            courseId:courseId,
-            userId: UserId,
-        })
-        if(!courseDetails){
-            return res.status(404).json({
-                success:false,
-                message:"Course details not found"
-            })
-        }
-        let totalDurationInSeconds=0;
-        courseDetails.courseContent.forEach((content)=>{
-            content.Subsection.forEach((subsection)=>{
-                const timeDurationInSeconds=parseInt(subsection.timeDuration);
-                timeDurationInSeconds+=timeDurationInSeconds;
+    const courseDetails = await Course.findOne({ _id: courseId })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "additionalInfo",
+        },
+      })
+      .populate("category")
+      .populate({
+        path: "courseContent",
+        populate: {
+          path: "Subsection",
+        },
+      })
+      .populate("ratingandreviews")
+      .exec();
 
-            })
+    let courseProgressCount=await CourseProgress.findOne({
+        courseId:courseId,
+        userId:UserId
+    })
+    console.log(courseProgressCount)
 
-        })
-        const totalDuration=sectoduration(totalDurationInSeconds);
-        return res.status(200).json({
-            success:true,
-            message:"Course details fetched successfully",
-            data:{
-                courseDetails,
-                totalDuration,
-                completedVideos:courseProgressCount?.completeVidoes
-                ? courseProgressCount?.completeVidoes
-                : ["none"],
-            }
-        })
-
+    if (!courseDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Course details not found",
+      });
     }
-    catch (error) {
-        return res.status(500).json({
-          success: false,
-          message: error.message,
-        })
-}
-}
+
+    let totalDurationInSeconds = 0;
+    courseDetails.courseContent.forEach((content) => {
+      content.Subsection.forEach((subsection) => {
+        const timeDurationInSeconds = parseInt(subsection.timeDuration);
+        totalDurationInSeconds += timeDurationInSeconds;
+      });
+    });
+
+    const totalDuration = sectoduration(totalDurationInSeconds);
+
+    return res.status(200).json({
+      success: true,
+      message: "Course details fetched successfully",
+      data: {
+        courseDetails,
+        totalDuration,
+        completedVideos: courseProgressCount?.completedVideos
+          ? courseProgressCount?.completedVideos
+          : [],
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Course details cannot be fetched",
+    });
+  }
+};
 
 exports.deleteCourse=async(req,res)=>{
     try{

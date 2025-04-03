@@ -31,7 +31,7 @@ router.post('/addCategory',auth,isAdmin,createcategory);
 router.post('/addCourseToCategory',auth,isInstructor,addCourseToCategory);
 
 router.get('/getAllCategories',getAllCategory);
-router.get('/getCategoryPage',getcatergoryPage);
+router.post('/getCategoryPage',getcatergoryPage);
 router.get('/getAverageRating',getAverageRating);
 router.get('/getAllRating',getAllRating);
 

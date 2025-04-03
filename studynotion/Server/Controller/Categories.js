@@ -2,6 +2,9 @@
 const Category=require('../Model/Category');
 const Course = require('../Model/Course');
 
+function getRandomInt(max) {
+    return Math.floor(Math.random() * max)
+  }
 //create tag api
 exports.createcategory=async(req,res)=>{
     try{
@@ -34,6 +37,8 @@ exports.createcategory=async(req,res)=>{
         })
     }
 }
+
+
 //get all tags
 exports.getAllCategory=async(req,res)=>{
     try{
@@ -77,9 +82,9 @@ exports.getcatergoryPage=async(req,res)=>{
 			});
         }
       
-        const categoriesExceptSelected = await Category.find({
-			_id: { $ne: categoryId },
-		}).populate({path:"courses",match:{Status:"Published"},populate:([{path:"instructor"},{path:"ratingandreviews"}])});
+      const categoriesExceptSelected = await Category.find({
+    _id: { $ne: categoryId },
+}).populate({ path: "courses", match: { Status: "Published" }, populate: [{ path: "instructor" }, { path: "ratingandreviews" }] });
 		let differentCourses = [];
 		for (const category of categoriesExceptSelected) {
 			differentCourses.push(...category.courses);
@@ -96,9 +101,9 @@ exports.getcatergoryPage=async(req,res)=>{
         return res.status(200).json({
             success:true,
             data:{
-                selectedCategory:selectedCategory,
-                differentCourses:differentCourses,
-                mostSellingCourses:mostSellingCourses
+                selectedCategory,   
+                differentCourses,
+                mostSellingCourses
             }
         })
 

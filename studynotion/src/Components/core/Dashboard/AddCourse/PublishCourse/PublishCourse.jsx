@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect,useState } from 'react'
 import {COURSE_STATUS} from "../../../../../utils/constants"
 import { useForm } from 'react-hook-form'
 import { useDispatch,useSelector } from 'react-redux'
@@ -18,15 +18,43 @@ function PublishCourse() {
       setValue("public",true)
     }
   })
+  const goBack=()=>{
+    dispatch(setStep(2))
+  }
+  const goToCourses=()=>{
+    dispatch(resetCourse())
+    navigate("/dashboard/my-courses")
+  }
+  const handlePublishCourse=async()=>{
+    if(course?.Status===COURSE_STATUS.PUBLISHED && getValues('public')===true || course?.Status===COURSE_STATUS.DRAFT && getValues('public')===false){
+      goToCourses()
+      return
+    }
+    const formData=new FormData()
+    formData.append("courseId",course._id)
+    const courseStatus=getValues('public')?COURSE_STATUS.PUBLISHED:COURSE_STATUS.DRAFT
+    formData.append("Status",courseStatus)
+    setLoading(true)
+    const result=await editCourseDetails(formData,token)
+    if(result){
+      goToCourses()
+    }
+  setLoading(false)
+
+  }
+  const onSubmit=(data)=>{
+    handlePublishCourse()
+  }
+
 
   
 
   return (
     <div className="rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6">
     <p className="text-2xl font-semibold text-richblack-5">
-      Publish Course
+      Publish Settings
     </p>
-    <form>
+    <form onSubmit={handleSubmit(onSubmit)}>
     <div className="my-6 mb-8">
     <label htmlFor="public" className="inline-flex items-center text-lg">
           <input
@@ -38,7 +66,28 @@ function PublishCourse() {
           <span className="ml-2 text-richblack-400">
               Make this course as public
             </span>
+
         </label>
+
+      </div>
+      <div className="ml-auto flex max-w-max items-center gap-x-4">
+        <button
+        disabled={loading}
+         type="button"
+         onClick={goBack}
+        className="flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900"
+
+        >
+            Back
+        </button>
+        <button  className="flex cursor-pointer items-center gap-x-2 rounded-md bg-richblack-300 py-[8px] px-[20px] font-semibold text-richblack-900"
+        
+        disabled={loading}
+        type='submit'
+
+        >
+           Save Changes
+        </button>
       </div>
       <div>
 

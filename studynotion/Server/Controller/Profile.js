@@ -160,82 +160,78 @@ exports.updateDisplyaPicture=async(req,res)=>{
     }
 }
 //get enrolled courses
-exports.getEnrolledCourses=async(req,res)=>{
-    try{
-        //get user id
-        const UserId=req.existingUser.id;
-        //get user details
-        const userDetails=await User.findOne({
-            _id:UserId
+exports.getEnrolledCourses = async (req, res) => {
+    try {
+        // Get user ID
+        const UserId = req.existingUser.id;
+
+        // Get user details
+        let userDetails = await User.findOne({
+            _id: UserId,
         })
-        .populate({
-            path: "courses",
-            populate: {
-              path: "courseContent",
-              populate: {
-                path: "Subsection",
-              },
-            },
-          }).exec();
-          
-          userDetails=userDetails.toObject();
-           var SubsectionLength = 0
-    for (var i = 0; i < userDetails.courses.length; i++) {
-      let totalDurationInSeconds = 0
-      SubsectionLength = 0
-      for (var j = 0; j < userDetails.courses[i].courseContent.length; j++) {
-        totalDurationInSeconds += userDetails.courses[i].courseContent[
-          j
-        ].Subsection.reduce((acc, curr) => acc + parseInt(curr.timeDuration), 0)
-        userDetails.courses[i].totalDuration = SecToDuration(
-          totalDurationInSeconds
-        )
-        SubsectionLength +=
-          userDetails.courses[i].courseContent[j].Subsection.length
-      }
-      let courseProgressCount = await CourseProgress.findOne({
-        courseId: userDetails.courses[i]._id,
-        userId: UserId,
-      })
-      courseProgressCount = courseProgressCount?.completeVidoes.length
-      if (SubsectionLength === 0) {
-        userDetails.courses[i].progressPercentage = 100
-      } else {
-        // To make it up to 2 decimal point
-        const multiplier = Math.pow(10, 2)
-        userDetails.courses[i].progressPercentage =
-          Math.round(
-            (courseProgressCount / SubsectionLength) * 100 * multiplier
-          ) / multiplier
-      }
-    }
-
-
-
-
-        //validate
-        if(!userDetails){
-            return res.status(404).json({
-                success:false,
-                message:"Courses not found"
+            .populate({
+                path: "courses",
+                populate: {
+                    path: "courseContent",
+                    populate: {
+                        path: "Subsection",
+                    },
+                },
             })
-        }
-        //return response
-        res.status(200).json({
-            success:true,
-            message:"Courses fetched successfully",
-            data:userDetails.courses
-        })
+            .exec();
 
-    }
-    catch(error){
+        // Convert to plain JavaScript object
+        userDetails = userDetails.toObject();
+
+        let SubsectionLength = 0;
+        for (let i = 0; i < userDetails.courses.length; i++) {
+            let totalDurationInSeconds = 0;
+            SubsectionLength = 0;
+            for (let j = 0; j < userDetails.courses[i].courseContent.length; j++) {
+                totalDurationInSeconds += userDetails.courses[i].courseContent[j].Subsection.reduce(
+                    (acc, curr) => acc + parseInt(curr.timeDuration),
+                    0
+                );
+                userDetails.courses[i].totalDuration = SecToDuration(totalDurationInSeconds);
+                SubsectionLength += userDetails.courses[i].courseContent[j].Subsection.length;
+            }
+            let courseProgressCount = await CourseProgress.findOne({
+                courseId: userDetails.courses[i]._id,
+                userId: UserId,
+            });
+            courseProgressCount = courseProgressCount?.completeVidoes.length || 0;
+            if (SubsectionLength === 0) {
+                userDetails.courses[i].progressPercentage = 100;
+            } else {
+                // To make it up to 2 decimal points
+                const multiplier = Math.pow(10, 2);
+                userDetails.courses[i].progressPercentage =
+                    Math.round((courseProgressCount / SubsectionLength) * 100 * multiplier) / multiplier;
+            }
+        }
+
+        // Validate
+        if (!userDetails) {
+            return res.status(404).json({
+                success: false,
+                message: "Courses not found",
+            });
+        }
+
+        // Return response
+        res.status(200).json({
+            success: true,
+            message: "Courses fetched successfully",
+            data: userDetails.courses,
+        });
+    } catch (error) {
         console.error(error);
         return res.status(500).json({
-            success:false,
-            message:"Courses cannot be fetched"
-        })
+            success: false,
+            message: "Courses cannot be fetched",
+        });
     }
-}
+};
 exports.instructorDashboard=async(req,res)=>{
     try{
         const courseData=await Course.find({"instructor":req.existingUser.id});

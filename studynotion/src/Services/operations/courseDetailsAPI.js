@@ -332,35 +332,30 @@ export const deleteCourse = async (data, token) => {
     return result
   }
   export const getFullDetailsOfCourse = async (courseId, token) => {
-    const toastId = toast.loading("Loading...")
-    //   dispatch(setLoading(true));
-    let result = null
+    const toastId = toast.loading("Loading...");
+    let result = null;
     try {
       const response = await apiconnector(
         "POST",
         GETFULLALLCOURSES_API,
+        { courseId },
         {
-          courseId,
-        },
-        {
-            Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         }
-      )
-      console.log("COURSE_FULL_DETAILS_API API RESPONSE............", response)
+      );
+      console.log("COURSE_FULL_DETAILS_API API RESPONSE............", response);
   
       if (!response.data.success) {
-        throw new Error(response.data.message)
+        throw new Error(response.data.message);
       }
-      result = response?.data?.data
+      result = response?.data?.data;
     } catch (error) {
-      console.log("COURSE_FULL_DETAILS_API API ERROR............", error)
-      result = error.response.data
-      // toast.error(error.response.data.message);
+      console.log("COURSE_FULL_DETAILS_API API ERROR............", error);
+      result = error.response?.data;
     }
-    toast.dismiss(toastId)
-    //   dispatch(setLoading(false));
-    return result
-  }
+    toast.dismiss(toastId);
+    return result;
+  };
   
   // mark a lecture as complete
 // mark a lecture as complete

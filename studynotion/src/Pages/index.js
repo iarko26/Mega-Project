@@ -8,6 +8,7 @@ import UpdatePassword from "./UpdatePassword";
 import About from "./About";
 import Contact from "./Contact";
 import Error from "./Error"
+import CourseDetails from "./CourseDetails";
 export{
     Home,
     Navbar,
@@ -18,6 +19,8 @@ export{
     UpdatePassword,
     About,
     Contact,
+    CourseDetails,
+    
     Error
     
 
